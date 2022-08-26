@@ -1,5 +1,5 @@
 {
-  "name": "notes-app-back-end",
+  "name": "openmusic-api",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@hapi/hapi": "^20.1.0",
+    "joi": "^17.6.0",
     "nanoid": "^3.1.20"
   }
 }

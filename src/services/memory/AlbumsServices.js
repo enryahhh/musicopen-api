@@ -1,5 +1,7 @@
 /* eslint-disable class-methods-use-this */
 const { nanoid } = require('nanoid');
+const InvariantError = require('../../exceptions/InvariantError');
+const NotFoundError = require('../../exceptions/NotFoundError');
 /* eslint-disable no-underscore-dangle */
 class AlbumService {
   constructor() {
@@ -20,7 +22,7 @@ class AlbumService {
     const isSuccess = this._albums.filter((album) => album.id === id).length > 0;
 
     if (!isSuccess) {
-      throw new Error('Album gagal ditambahkan');
+      throw new InvariantError('Album gagal ditambahkan');
     }
 
     return id;
@@ -33,7 +35,7 @@ class AlbumService {
   getAlbumById(albumId) {
     const album = this._albums.filter((a) => a.id === albumId)[0];
     if (!album) {
-      throw new Error('Album tidak ditemukan');
+      throw new NotFoundError('Album tidak ditemukan');
     }
     return album;
   }
@@ -42,7 +44,7 @@ class AlbumService {
     const index = this._albums.findIndex((album) => album.id === id);
 
     if (index === -1) {
-      throw new Error('Gagal update album. id tidak ditemukan');
+      throw new NotFoundError('Gagal update album. id tidak ditemukan');
     }
 
     const updatedAt = new Date().toISOString();
@@ -59,7 +61,7 @@ class AlbumService {
     const index = this._albums.findIndex((album) => album.id === id);
 
     if (index === -1) {
-      throw new Error('Gagal update album. id tidak ditemukan');
+      throw new NotFoundError('Gagal update album. id tidak ditemukan');
     }
 
     this._albums.splice(index, 1);
