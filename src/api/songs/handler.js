@@ -1,8 +1,10 @@
+const ClientError = require('../../exceptions/ClientError');
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-underscore-dangle */
 class SongsHandler {
-  constructor(service) {
+  constructor(service, validator) {
     this._service = service;
+    this._validator = validator;
 
     this.postSongHandler = this.postSongHandler.bind(this);
     this.getAllSongsHandler = this.getAllSongsHandler.bind(this);
@@ -13,6 +15,7 @@ class SongsHandler {
 
   postSongHandler(request, h) {
     try {
+      this._validator.validateSongPayload(request.payload);
       const {
         title = 'untitled', year, genre, performer, duration, albumId,
       } = request.payload;
@@ -30,11 +33,20 @@ class SongsHandler {
       response.code(201);
       return response;
     } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: 'fail',
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
       const response = h.response({
-        status: 'fail',
-        message: 'Album gagal ditambahkan',
+        status: 'error',
+        message: 'Maaf, terjadi kegagalan pada server kami.',
       });
       response.code(500);
+      console.error(error);
       return response;
     }
   }
@@ -64,17 +76,27 @@ class SongsHandler {
       response.code(200);
       return response;
     } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: 'fail',
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
       const response = h.response({
-        status: 'fail',
-        message: error.message,
+        status: 'error',
+        message: 'Maaf, terjadi kegagalan pada server kami.',
       });
-      response.code(404);
+      response.code(500);
+      console.error(error);
       return response;
     }
   }
 
   putSongByIdHandler(request, h) {
     try {
+      this._validator.validateSongPayload(request.payload);
       const { id } = request.params;
 
       this._service.editSongById(id, request.payload);
@@ -89,11 +111,20 @@ class SongsHandler {
       response.code(200);
       return response;
     } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: 'fail',
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
       const response = h.response({
-        status: 'fail',
-        message: error.message,
+        status: 'error',
+        message: 'Maaf, terjadi kegagalan pada server kami.',
       });
-      response.code(404);
+      response.code(500);
+      console.error(error);
       return response;
     }
   }
@@ -109,11 +140,20 @@ class SongsHandler {
         message: ' Berhasil menghapus Lagu',
       };
     } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: 'fail',
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
       const response = h.response({
-        status: 'fail',
-        message: error.message,
+        status: 'error',
+        message: 'Maaf, terjadi kegagalan pada server kami.',
       });
-      response.code(404);
+      response.code(500);
+      console.error(error);
       return response;
     }
   }
