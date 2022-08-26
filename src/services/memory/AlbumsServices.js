@@ -42,7 +42,7 @@ class AlbumService {
     const index = this._albums.findIndex((album) => album.id === id);
 
     if (index === -1) {
-      throw new Error('Gagal upde album. id tidak ditemukan');
+      throw new Error('Gagal update album. id tidak ditemukan');
     }
 
     const updatedAt = new Date().toISOString();
@@ -59,7 +59,7 @@ class AlbumService {
     const index = this._albums.findIndex((album) => album.id === id);
 
     if (index === -1) {
-      throw new Error('Gagal upde album. id tidak ditemukan');
+      throw new Error('Gagal update album. id tidak ditemukan');
     }
 
     this._albums.splice(index, 1);
