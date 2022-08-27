@@ -52,6 +52,20 @@ class SongsService {
     return result.rows.map(mapDBToModel.mapSongDBToModel);
   }
 
+  async getSongsBySearch({ title, performer }) {
+    const query = {
+      text: `SELECT * FROM songs WHERE title ILIKE '%' || $1 || '%' ${title !== undefined && performer !== undefined ? 'AND' : 'OR'} performer ILIKE '%' || $2 || '%'`,
+      values: [title, performer],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rows.length) {
+      throw new NotFoundError('lagu tidak ditemukan');
+    }
+    return result.rows.map(mapDBToModel.mapSongDBToModel);
+  }
+
   async editSongById(id, {
     title, year, genre, performer, duration, albumId,
   }) {
