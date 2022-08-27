@@ -70,7 +70,7 @@ class AlbumService {
     const result = await this._pool.query(query);
 
     if (!result.rows.length) {
-      throw new NotFoundError('Gagal update album. id tidak ditemukan');
+      throw new NotFoundError('Gagal menghapus album. id tidak ditemukan');
     }
   }
 }

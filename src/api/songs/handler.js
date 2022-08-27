@@ -13,14 +13,14 @@ class SongsHandler {
     this.deleteSongByIdHandler = this.deleteSongByIdHandler.bind(this);
   }
 
-  postSongHandler(request, h) {
+  async postSongHandler(request, h) {
     try {
       this._validator.validateSongPayload(request.payload);
       const {
         title = 'untitled', year, genre, performer, duration, albumId,
       } = request.payload;
 
-      const songId = this._service.addSong({
+      const songId = await this._service.addSong({
         title, year, genre, performer, duration, albumId,
       });
       const response = h.response({
@@ -51,8 +51,10 @@ class SongsHandler {
     }
   }
 
-  getAllSongsHandler() {
-    const songs = this._service.getAllSong();
+  async getAllSongsHandler() {
+    const rawSongs = await this._service.getAllSong();
+    // eslint-disable-next-line max-len
+    const songs = rawSongs.map((e) => (({ id, title, performer }) => ({ id, title, performer }))(e));
     return {
       status: 'success',
       data: {
@@ -61,16 +63,15 @@ class SongsHandler {
     };
   }
 
-  getSongByIdHandler(request, h) {
+  async getSongByIdHandler(request, h) {
     try {
-      const { id } = request.params;
-
-      const song = this._service.getSongById(id);
-
+      const songId = request.params.id;
+      const song = await this._service.getSongById(songId);
+      // const song = (({ id, title, performer }) => ({ id, title, performer }))(rawsong);
       const response = h.response({
         status: 'success',
         data: {
-          song,
+          song: song[0],
         },
       });
       response.code(200);
@@ -94,16 +95,16 @@ class SongsHandler {
     }
   }
 
-  putSongByIdHandler(request, h) {
+  async putSongByIdHandler(request, h) {
     try {
       this._validator.validateSongPayload(request.payload);
       const { id } = request.params;
 
-      this._service.editSongById(id, request.payload);
+      await this._service.editSongById(id, request.payload);
 
       const response = h.response({
         status: 'success',
-        message: 'Sukses mengubah album',
+        message: 'Sukses mengubah lagu',
         data: {
           songId: id,
         },
@@ -129,11 +130,11 @@ class SongsHandler {
     }
   }
 
-  deleteSongByIdHandler(request, h) {
+  async deleteSongByIdHandler(request, h) {
     try {
       const { id } = request.params;
 
-      this._service.deleteSongById(id);
+      await this._service.deleteSongById(id);
 
       return {
         status: 'success',
