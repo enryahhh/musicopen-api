@@ -36,7 +36,7 @@ class AlbumService {
 
   async getAlbumById(albumId) {
     const query = {
-      text: 'SELECT * FROM albums WHERE id = $1',
+      text: 'SELECT albums.*, songs.id as song_id, songs.title, songs.performer FROM albums JOIN songs ON albums.id = songs."albumId" WHERE albums.id = $1',
       values: [albumId],
     };
 
@@ -44,7 +44,8 @@ class AlbumService {
     if (!result.rows.length) {
       throw new NotFoundError('Album tidak ditemukan');
     }
-    return result.rows.map(mapDBToModel.mapAlbumDBToModel)[0];
+
+    return mapDBToModel.mapAlbumWithSongModel(result.rows);
   }
 
   async updateAlbumById(id, { name, year }) {
