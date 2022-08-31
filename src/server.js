@@ -18,16 +18,23 @@ const users = require('./api/users');
 const UsersService = require('./services/postgre/UsersService');
 const UsersValidator = require('./validator/users');
 
+// playlists
+const playlists = require('./api/playlists');
+const PlaylistsService = require('./services/postgre/PlaylistsService');
+const PlaylistsValidator = require('./validator/playlists');
+
 // authentications
 const authentications = require('./api/authentications');
 const AuthenticationsService = require('./services/postgre/AuthenticationsService');
 const TokenManager = require('./tokenize/TokenManager');
 const AuthenticationsValidator = require('./validator/authentications');
+const ClientError = require('./exceptions/ClientError');
 
 const init = async () => {
   const albumService = new AlbumService();
   const songsService = new SongsService();
   const usersService = new UsersService();
+  const playlistsService = new PlaylistsService();
   const authenticationsService = new AuthenticationsService();
 
   const server = Hapi.server({
@@ -47,7 +54,7 @@ const init = async () => {
   ]);
 
   // mendefinisikan strategy autentikasi jwt
-  server.auth.strategy('notesapp_jwt', 'jwt', {
+  server.auth.strategy('musicopenapi_jwt', 'jwt', {
     keys: process.env.ACCESS_TOKEN_KEY,
     verify: {
       aud: false,
@@ -86,6 +93,13 @@ const init = async () => {
       },
     },
     {
+      plugin: playlists,
+      options: {
+        service: playlistsService,
+        validator: PlaylistsValidator,
+      },
+    },
+    {
       plugin: authentications,
       options: {
         authenticationsService,
@@ -95,6 +109,22 @@ const init = async () => {
       },
     },
   ]);
+
+  await server.ext('onPreResponse', (request, h) => {
+    // mendapatkan konteks response dari request
+    const { response } = request;
+    if (response instanceof ClientError) {
+      // membuat response baru dari response toolkit sesuai kebutuhan error handling
+      const newResponse = h.response({
+        status: 'fail',
+        message: response.message,
+      });
+      newResponse.code(response.statusCode);
+      return newResponse;
+    }
+    // jika bukan ClientError, lanjutkan dengan response sebelumnya (tanpa terintervensi)
+    return response.continue || response;
+  });
 
   await server.start();
   console.log(`Server berjalan pada ${server.info.uri}`);

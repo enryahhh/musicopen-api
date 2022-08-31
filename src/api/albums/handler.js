@@ -52,7 +52,7 @@ class AlbumsHandler {
 
     return {
       status: 'success',
-      message: 'Sukses menambahkan album',
+      message: 'Sukses menampilkan album',
       data: {
         albums,
       },

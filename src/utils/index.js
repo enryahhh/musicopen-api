@@ -56,4 +56,30 @@ const mapAlbumWithSongModel = (data) => {
   return newObj;
 };
 
-module.exports = { mapAlbumDBToModel, mapSongDBToModel, mapAlbumWithSongModel };
+const mapPlaylistInSongModel = (data) => {
+  const newObj = {};
+  const songs = [];
+  let lastPlaylistId = null;
+
+  data.forEach((e) => {
+    if (e.id !== lastPlaylistId) {
+      newObj.id = e.id;
+      newObj.name = e.name;
+      newObj.username = e.username;
+    }
+    if (newObj.id === e.id && e.song_id !== null) {
+      songs.push({ id: e.song_id, title: e.title, performer: e.performer });
+    }
+    newObj.songs = songs;
+    lastPlaylistId = e.id;
+  });
+
+  return newObj;
+};
+
+module.exports = {
+  mapAlbumDBToModel,
+  mapSongDBToModel,
+  mapAlbumWithSongModel,
+  mapPlaylistInSongModel,
+};
