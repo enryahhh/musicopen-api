@@ -77,9 +77,31 @@ const mapPlaylistInSongModel = (data) => {
   return newObj;
 };
 
+const mapLogPlaylist = (data) => {
+  const newObj = {};
+  const activities = [];
+  let lastPlaylistId = null;
+
+  data.forEach((e) => {
+    if (e.playlistId !== lastPlaylistId) {
+      newObj.playlistId = e.playlist_id;
+    }
+    if (newObj.playlistId === e.playlist_id) {
+      activities.push({
+        username: e.username, title: e.title, action: e.action, time: e.time,
+      });
+    }
+    newObj.activities = activities;
+    lastPlaylistId = e.playlist_id;
+  });
+
+  return newObj;
+};
+
 module.exports = {
   mapAlbumDBToModel,
   mapSongDBToModel,
   mapAlbumWithSongModel,
   mapPlaylistInSongModel,
+  mapLogPlaylist,
 };

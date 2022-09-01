@@ -110,6 +110,7 @@ class PlaylistsService {
       values: [id],
     };
     const result = await this._pool.query(query);
+    console.log(id);
     if (!result.rows.length) {
       throw new NotFoundError('Playlist tidak ditemukan');
     }
@@ -118,6 +119,44 @@ class PlaylistsService {
       console.log(playlist.owner);
       throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
     }
+  }
+
+  async insertLog(action, userId, playlistId, songId) {
+    const createdAt = new Date().toISOString();
+    const query = {
+      text: 'INSERT INTO playlist_song_activities(playlist_id, song_id, user_id, action, time) VALUES($1,$2,$3,$4,$5) RETURNING id',
+      values: [playlistId, songId, userId, action, createdAt],
+    };
+    const result = await this._pool.query(query);
+
+    if (!result.rows[0].id) {
+      throw new InvariantError('Gagal menambahkan log playlist');
+    }
+  }
+
+  // async getPlaylistById(id) {
+  //   const query = {
+  //     text: 'SELECT * FROM playlists WHERE id = $1',
+  //     values: [id],
+  //   };
+
+  //   const result = await this._pool.query(query);
+  //   if (!result.rows.length) {
+  //     throw new NotFoundError('playlist tidak ditemukan');
+  //   }
+  // }
+
+  async getLog(id) {
+    const query = {
+      text: `SELECT playlist_song_activities.*, users.username, songs.title
+             FROM playlist_song_activities JOIN users ON playlist_song_activities.user_id = users.id
+             JOIN songs ON playlist_song_activities.song_id = songs.id WHERE playlist_song_activities.playlist_id = $1`,
+      values: [id],
+    };
+
+    const result = await this._pool.query(query);
+
+    return mapDBToModel.mapLogPlaylist(result.rows);
   }
 
   // async verifyNoteAccess(playlistId, userId) {
