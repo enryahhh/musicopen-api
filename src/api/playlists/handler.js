@@ -16,7 +16,6 @@ class PlaylistsHandler {
   }
 
   async postPlaylistHandler(request, h) {
-    console.log(request.payload);
     try {
       this._validator.validatePlaylistPayload(request.payload);
       const { name } = request.payload;
@@ -33,7 +32,6 @@ class PlaylistsHandler {
       response.code(201);
       return response;
     } catch (error) {
-      console.log(error);
       const response = h.response({
         status: 'error',
         message: 'Maaf, terjadi kegagalan pada server kami.',
@@ -86,7 +84,7 @@ class PlaylistsHandler {
       const { id: credentialId } = request.auth.credentials;
       this._validator.validatePlaylistSongPayload(request.payload);
       await this._service.verifySongId(songId);
-      await this._service.verifyOwner(playlistId, credentialId);
+      await this._service.verifyPlaylistAccess(playlistId, credentialId);
       await this._service.addSongToPlaylist(playlistId, songId);
       await this._service.insertLog('add', credentialId, playlistId, songId);
       const response = h.response({
@@ -110,7 +108,7 @@ class PlaylistsHandler {
     try {
       const { id } = request.params;
       const { id: credentialId } = request.auth.credentials;
-      await this._service.verifyOwner(id, credentialId);
+      await this._service.verifyPlaylistAccess(id, credentialId);
       const playlist = await this._service.getSongsInPlaylist(id);
       return {
         status: 'success',
@@ -119,7 +117,6 @@ class PlaylistsHandler {
         },
       };
     } catch (error) {
-      console.log(error);
       return error;
     }
   }
@@ -131,7 +128,7 @@ class PlaylistsHandler {
       const { id } = request.params;
       this._validator.validatePlaylistSongPayload(request.payload);
 
-      await this._service.verifyOwner(id, credentialId);
+      await this._service.verifyPlaylistAccess(id, credentialId);
       await this._service.deleteSongFromPlaylist(songId, id);
       await this._service.insertLog('delete', credentialId, id, songId);
       const response = h.response({
@@ -155,14 +152,13 @@ class PlaylistsHandler {
     try {
       const { id } = request.params;
       const { id: credentialId } = request.auth.credentials;
-      await this._service.verifyOwner(id, credentialId);
+      await this._service.verifyPlaylistAccess(id, credentialId);
       const playlistLog = await this._service.getLog(id);
       return {
         status: 'success',
         data: playlistLog,
       };
     } catch (error) {
-      console.log(error);
       return error;
     }
   }

@@ -8,8 +8,9 @@ const AuthorizationError = require('../../exceptions/AuthorizationError');
 const mapDBToModel = require('../../utils');
 
 class PlaylistsService {
-  constructor() {
+  constructor(collaborationService) {
     this._pool = new Pool();
+    this._collaborationService = collaborationService;
   }
 
   async addPlaylist(name, owner) {
@@ -30,7 +31,8 @@ class PlaylistsService {
 
   async getPlaylists(owner) {
     const query = {
-      text: 'SELECT playlists.id,playlists.name,users.username FROM playlists JOIN users ON playlists.owner = users.id WHERE owner = $1',
+      text: `SELECT playlists.id,playlists.name,users.username FROM playlists JOIN users ON playlists.owner = users.id 
+              LEFT JOIN collaborations ON collaborations.playlist_id = playlists.id WHERE owner = $1 OR collaborations.user_id = $1`,
       values: [owner],
     };
     const result = await this._pool.query(query);
@@ -110,13 +112,11 @@ class PlaylistsService {
       values: [id],
     };
     const result = await this._pool.query(query);
-    console.log(id);
     if (!result.rows.length) {
-      throw new NotFoundError('Playlist tidak ditemukan');
+      throw new NotFoundError('Playlist owner tidak ditemukan');
     }
     const playlist = result.rows[0];
     if (playlist.owner !== owner) {
-      console.log(playlist.owner);
       throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
     }
   }
@@ -134,18 +134,6 @@ class PlaylistsService {
     }
   }
 
-  // async getPlaylistById(id) {
-  //   const query = {
-  //     text: 'SELECT * FROM playlists WHERE id = $1',
-  //     values: [id],
-  //   };
-
-  //   const result = await this._pool.query(query);
-  //   if (!result.rows.length) {
-  //     throw new NotFoundError('playlist tidak ditemukan');
-  //   }
-  // }
-
   async getLog(id) {
     const query = {
       text: `SELECT playlist_song_activities.*, users.username, songs.title
@@ -159,20 +147,20 @@ class PlaylistsService {
     return mapDBToModel.mapLogPlaylist(result.rows);
   }
 
-  // async verifyNoteAccess(playlistId, userId) {
-  //   try {
-  //     await this.verifyOwner(playlistId, userId);
-  //   } catch (error) {
-  //     if (error instanceof NotFoundError) {
-  //       throw error;
-  //     }
-  //     try {
-  //       await this._collaborationService.verifyCollaborator(noteId, userId);
-  //     } catch {
-  //       throw error;
-  //     }
-  //   }
-  // }
+  async verifyPlaylistAccess(playlistId, userId) {
+    try {
+      await this.verifyOwner(playlistId, userId);
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
+      try {
+        await this._collaborationService.verifyCollaborator(playlistId, userId);
+      } catch {
+        throw error;
+      }
+    }
+  }
 }
 
 module.exports = PlaylistsService;

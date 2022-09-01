@@ -23,6 +23,10 @@ const playlists = require('./api/playlists');
 const PlaylistsService = require('./services/postgre/PlaylistsService');
 const PlaylistsValidator = require('./validator/playlists');
 
+const collaborations = require('./api/collaborations');
+const CollaborationsService = require('./services/postgre/CollaborationsService');
+const CollaborationsValidator = require('./validator/collaborations');
+
 // authentications
 const authentications = require('./api/authentications');
 const AuthenticationsService = require('./services/postgre/AuthenticationsService');
@@ -31,10 +35,11 @@ const AuthenticationsValidator = require('./validator/authentications');
 const ClientError = require('./exceptions/ClientError');
 
 const init = async () => {
+  const collaborationsService = new CollaborationsService();
   const albumService = new AlbumService();
   const songsService = new SongsService();
   const usersService = new UsersService();
-  const playlistsService = new PlaylistsService();
+  const playlistsService = new PlaylistsService(collaborationsService);
   const authenticationsService = new AuthenticationsService();
 
   const server = Hapi.server({
@@ -108,6 +113,14 @@ const init = async () => {
         validator: AuthenticationsValidator,
       },
     },
+    {
+      plugin: collaborations,
+      options: {
+        collaborationsService,
+        playlistsService,
+        validator: CollaborationsValidator,
+      },
+    },
   ]);
 
   await server.ext('onPreResponse', (request, h) => {
@@ -127,7 +140,7 @@ const init = async () => {
   });
 
   await server.start();
-  console.log(`Server berjalan pada ${server.info.uri}`);
+  (`Server berjalan pada ${server.info.uri}`);
 };
 
 init();

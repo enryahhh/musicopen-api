@@ -1,7 +1,5 @@
 /* eslint-disable camelcase */
 
-exports.shorthands = undefined;
-
 exports.up = (pgm) => {
   pgm.createType('aksi', ['add', 'delete']);
   pgm.createTable('playlist_song_activities', {
