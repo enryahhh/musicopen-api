@@ -1,7 +1,10 @@
+/* eslint-disable no-underscore-dangle */
 require('dotenv').config();
 
 const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
+const Inert = require('@hapi/inert');
+const path = require('path');
 
 // album
 const album = require('./api/albums');
@@ -34,6 +37,16 @@ const TokenManager = require('./tokenize/TokenManager');
 const AuthenticationsValidator = require('./validator/authentications');
 const ClientError = require('./exceptions/ClientError');
 
+// exports playlist
+const _exports = require('./api/exports'); // harus _exports biar ga kedetek fungsi global nodejs
+const ProducerService = require('./services/rabbitmq/ProducerService');
+const ExportsValidator = require('./validator/exports');
+
+// uploads image
+const uploads = require('./api/uploads');
+const StorageService = require('./services/storage/StorageService');
+const UploadsValidator = require('./validator/uploads');
+
 const init = async () => {
   const collaborationsService = new CollaborationsService();
   const albumService = new AlbumService();
@@ -41,6 +54,7 @@ const init = async () => {
   const usersService = new UsersService();
   const playlistsService = new PlaylistsService(collaborationsService);
   const authenticationsService = new AuthenticationsService();
+  const storageService = new StorageService(path.resolve(__dirname, 'api/uploads/file/images'));
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -55,6 +69,9 @@ const init = async () => {
   await server.register([
     {
       plugin: Jwt,
+    },
+    {
+      plugin: Inert,
     },
   ]);
 
@@ -121,6 +138,22 @@ const init = async () => {
         validator: CollaborationsValidator,
       },
     },
+    {
+      plugin: _exports,
+      options: {
+        service: ProducerService,
+        playlistsService,
+        validator: ExportsValidator,
+      },
+    },
+    {
+      plugin: uploads,
+      options: {
+        service: storageService,
+        albumService,
+        validator: UploadsValidator,
+      },
+    },
   ]);
 
   await server.ext('onPreResponse', (request, h) => {
@@ -140,7 +173,7 @@ const init = async () => {
   });
 
   await server.start();
-  (`Server berjalan pada ${server.info.uri}`);
+  console.log(`Server berjalan pada ${server.info.uri}`);
 };
 
 init();

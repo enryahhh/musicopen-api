@@ -45,6 +45,7 @@ const mapAlbumWithSongModel = (data) => {
       newObj.id = e.id;
       newObj.name = e.name;
       newObj.year = e.year;
+      newObj.coverUrl = (e.cover !== null ? `http://${process.env.HOST}:${process.env.PORT}/upload/images/${e.cover}` : e.cover);
     }
     if (newObj.id === e.id && e.song_id !== null) {
       songs.push({ id: e.song_id, title: e.title, performer: e.performer });

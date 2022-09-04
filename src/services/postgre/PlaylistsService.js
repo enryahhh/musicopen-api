@@ -113,7 +113,7 @@ class PlaylistsService {
     };
     const result = await this._pool.query(query);
     if (!result.rows.length) {
-      throw new NotFoundError('Playlist owner tidak ditemukan');
+      throw new NotFoundError('Playlist serta owner tidak ditemukan');
     }
     const playlist = result.rows[0];
     if (playlist.owner !== owner) {
