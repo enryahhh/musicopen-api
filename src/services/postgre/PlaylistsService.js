@@ -47,7 +47,7 @@ class PlaylistsService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Gagal menghapus playlist. id tidak ditemukan');
     }
   }
@@ -88,7 +88,7 @@ class PlaylistsService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Gagal menghapus lagu dari playlist. id tidak ditemukan');
     }
   }
@@ -101,7 +101,7 @@ class PlaylistsService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('lagu tidak ditemukan');
     }
   }
@@ -112,7 +112,7 @@ class PlaylistsService {
       values: [id],
     };
     const result = await this._pool.query(query);
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Playlist serta owner tidak ditemukan');
     }
     const playlist = result.rows[0];

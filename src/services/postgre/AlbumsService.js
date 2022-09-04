@@ -42,7 +42,7 @@ class AlbumService {
     };
 
     const result = await this._pool.query(query);
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Album tidak ditemukan');
     }
 
@@ -58,7 +58,7 @@ class AlbumService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Gagal update album. id tidak ditemukan');
     }
   }
@@ -72,7 +72,7 @@ class AlbumService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Gagal update cover album. id tidak ditemukan');
     }
   }
@@ -85,7 +85,7 @@ class AlbumService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Gagal menghapus album. id tidak ditemukan');
     }
   }
@@ -111,7 +111,7 @@ class AlbumService {
 
     const result = await this._pool.query(query);
     await this._cacheService.delete(`likes:${id}`);
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Gagal unlike album. id tidak ditemukan');
     }
   }
@@ -156,7 +156,6 @@ class AlbumService {
       };
 
       const result = await this._pool.query(query);
-      console.log(result.rows);
       cache = false;
       if (result.rowCount > 0) {
         await this._cacheService.set(`likes:${result.rows[0].album_id}`, JSON.stringify(result.rows[0].likes));

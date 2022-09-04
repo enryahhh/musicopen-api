@@ -86,29 +86,24 @@ class AlbumsHandler {
   }
 
   async postLikesAlbumHandler(request, h) {
-    try {
-      const { id } = request.params;
-      const { id: credentialId } = request.auth.credentials;
-      await this._service.verifyAlbum(id);
-      const isLiked = await this._service.verifyLikeAlbum(id, credentialId);
-      let pesan = '';
-      if (isLiked > 0) {
-        await this._service.unlikeAlbumById(id, credentialId);
-        pesan = ' Berhasil batal menyukai album ';
-      } else {
-        await this._service.likesAlbumById(id, credentialId);
-        pesan = ' Berhasil menyukai album ';
-      }
-      const response = h.response({
-        status: 'success',
-        message: pesan,
-      });
-      response.code(201);
-      return response;
-    } catch (error) {
-      console.log(error);
-      return error;
+    const { id } = request.params;
+    const { id: credentialId } = request.auth.credentials;
+    await this._service.verifyAlbum(id);
+    const isLiked = await this._service.verifyLikeAlbum(id, credentialId);
+    let pesan = '';
+    if (isLiked > 0) {
+      await this._service.unlikeAlbumById(id, credentialId);
+      pesan = ' Berhasil batal menyukai album ';
+    } else {
+      await this._service.likesAlbumById(id, credentialId);
+      pesan = ' Berhasil menyukai album ';
     }
+    const response = h.response({
+      status: 'success',
+      message: pesan,
+    });
+    response.code(201);
+    return response;
   }
 
   async getLikesAlbumHandler(request, h) {
